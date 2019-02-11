@@ -1,24 +1,50 @@
 export const intmath = {
-  toInt: function(decimalNumber: string) {
-    let int: number = parseInt(decimalNumber.split(",")[0]);
+  toInt: function(decimal: any) {
+    let decimalNumber: string = decimal + '' // Since type assertions in function signature don't work :/
+    let US: boolean = decimalNumber.indexOf('.') > decimalNumber.indexOf(',');
+    let int: number = US ? decimalNumber.indexOf('.') > 0 ? parseInt(decimalNumber.split('.')[0]) : parseInt(decimalNumber) : decimalNumber.indexOf(',') > 0 ? parseInt(decimalNumber.split(',')[0]) : parseInt(decimalNumber);
     let frac =
-      decimalNumber.indexOf(",") > 0 ? decimalNumber.split(",")[1] : "";
+      US ? decimalNumber.indexOf('.') > 0 ? decimalNumber.split('.')[1] : '' : decimalNumber.indexOf(',') > 0 ? decimalNumber.split(',')[1] : '';
     let radixPoint = frac.length;
     let bigInt = int * Math.pow(10, radixPoint);
     let sign = decimalNumber.indexOf("-") == 0 ? 1 : 0;
     return {
-      i:
-        bigInt +
-        (sign == 0
-          ? frac.length > 0
-            ? parseInt(frac)
-            : 0
-          : frac.length > 0
-          ? -1 * parseInt(frac)
-          : 0),
+      i: bigInt +
+        (sign == 0 ?
+          frac.length > 0 ?
+          parseInt(frac) :
+          0 :
+          frac.length > 0 ?
+          -1 * parseInt(frac) :
+          0),
       r: radixPoint,
       s: sign
     };
+  },
+
+  round: {
+    fl(val: string, significant: number) {
+      if (intmath.toInt(val).r > significant) {
+        let integer = intmath.toInt(val).i
+        if (integer % 10 > 4) {
+          integer += 10 // Aufrunden = Abrunden + 1 Differenz in der naechsten Stelle
+        }
+        integer -= (integer % 10)
+        return integer / Math.pow(10, intmath.toInt(val).r)
+      }
+      else return parseFloat(val)
+    }
+  },
+
+  roundDown: {
+    fl(val: string, significant: number) {
+      if (intmath.toInt(val).r > significant) {
+        let integer = intmath.toInt(val).i
+        integer -= (integer % 10)
+        return integer / Math.pow(10, intmath.toInt(val).r)
+      }
+      else return parseFloat(val)
+    }
   },
 
   plus: {
