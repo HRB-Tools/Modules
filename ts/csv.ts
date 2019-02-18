@@ -1,7 +1,7 @@
 // CSV Splitter -> returns a two dimensional array
 
 export const resultArray = function(value){
-    let temp = value.split('\n'), arr = [];
+    let temp = value.split('\r\n'), arr = [];
     if ( temp.length >= 1 ) {
         temp.forEach(function(element){
             arr.push(element.split(';'));

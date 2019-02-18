@@ -1,9 +1,7 @@
 import { fileresult } from './fileio';
 import {csvArray, resultArray} from './csv';
-import { classify } from './classify';
-import { dataLogic } from "./logic";
-import { lighte, lightBool } from "./lighte";
-import { filedownload } from "./filedownload";
+import { filedownload } from './filedownload';
+import { colSwap } from './colswap'
 
 // Init when document is loaded
 document.onreadystatechange = function(){
@@ -12,30 +10,25 @@ document.onreadystatechange = function(){
     }
 };
 
+const colMap : number[] = [6, 0, 7, 9, 10, -1, -1, 13] // from Index => map[Index]
+const reverseMap : number[] = [1, -1, -1, -1, -1, -1, 0, 2, -1, 3, 4, -1, -1, 7]
+const tagsSource : string[] = ['Sollkonto', 'Betrag', 'Habenkonto', 'Belegdatum', 'Belegnummer', 'Steuercode', 'Steuerart']
+const tagsTarget : string[] = ['Umsatz', 'Soll/Haben', 'leer', 'leer', 'leer', 'leer', 'Konto', 'Gegenkonto', 'leer', 'Belegdatum', 'Belegfeld 1', 'Belegfeld 2', 'leer', 'Buchungstext']
 
 let init = function(){
     let text;
-
     // Adds EventListeners to each item
     let btn1 = document.querySelector('ul .nav');
     btn1.addEventListener('mousedown', function (){
         text = fileresult();
         text.then(function(csvFile) {
-            return resultArray(csvFile);
+            return resultArray(csvFile)
+        }).then(function(resultArr) {
+            return colSwap(resultArr, reverseMap)
         }).then(function (arr2d) {
-            return dataLogic(arr2d, lighte, lightBool);
-        }).then(function (arr2d) {
-            let information = classify(arr2d.outArr);
-            if ( arr2d.outArr.length > 0 ){
-                let name = `EXTF_${information.wj}_${information.vom+information.bis}.csv`;
-                let csv = csvArray(arr2d.outArr);
-                filedownload(csv, name);
-            }
-            if ( arr2d.restArr.length > 0 ){
-                let name = `EXTF_${information.wj}_${information.vom+information.bis}_rest.csv`;
-                let csv = csvArray(arr2d.restArr);
-                filedownload(csv, name);
-            }
+            return csvArray(arr2d)
+        }).then(function(csvArr){
+            filedownload(csvArr, `DTVF_${new Date().getFullYear()}_${('00' + (new Date().getMonth()+1)).slice(-2)}${('00' + new Date().getDate()).slice(-2)}.csv`)
         })
     });
 
